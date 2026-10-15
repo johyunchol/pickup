@@ -1,0 +1,6 @@
+packages:
+  - "apps/*"
+
+# unrs-resolver 의 postinstall 은 네이티브 바인딩이 없을 때만 쓰는 폴백이라 막아 둔다.
+allowBuilds:
+  unrs-resolver: false
