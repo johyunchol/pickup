@@ -8,6 +8,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
+    "verify": "bash tools/verify.sh",
+    "verify:js": "bash tools/verify.sh js",
     "verify:mobile": "bash tools/verify_mobile.sh",
     "tokens:generate": "pnpm --filter @pickup/tokens generate",
     "tokens:check": "pnpm --filter @pickup/tokens check",

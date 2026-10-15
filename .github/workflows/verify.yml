@@ -1,0 +1,38 @@
+# push·PR 마다 저장소 전체 검사. 로컬과 같은 입구 하나 — pnpm verify.
+# 버전은 README 의 "만든 시점의 버전" 과 맞춘다 (pnpm 은 package.json 의 packageManager 를 읽는다).
+name: verify
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "26.7"
+          cache: pnpm
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: "3.47.5"
+          cache: true
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm verify

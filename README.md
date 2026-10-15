@@ -30,11 +30,14 @@ JS 쪽은 pnpm workspace + Turborepo, Flutter 쪽은 루트 `pubspec.yaml` 의 D
 ```bash
 pnpm install
 pnpm dev      # 서버와 사장님 화면을 같이 띄웁니다 (Flutter 앱은 뜨지 않음)
-pnpm verify:mobile   # Flutter 쪽 pub get → 앱·패키지마다 analyze, test
-pnpm api:generate    # 스키마·컨트롤러를 고친 뒤 → openapi.json → Dart 클라이언트 다시 만들기
-pnpm api:check       # 생성물이 서버 코드와 같은지 확인 (다르면 실패)
-pnpm tokens:check    # 디자인 토큰 생성물 확인
+pnpm verify   # 전부 검사 — 끝까지 돌린 뒤 단계별 ✔/✘ 요약, 하나라도 실패면 종료 코드 1
+pnpm api:generate     # 스키마·컨트롤러를 고친 뒤 → openapi.json → Dart 클라이언트 다시 만들기
+pnpm tokens:generate  # tokens.json 을 고친 뒤 → 웹 CSS · 앱 Dart 다시 만들기
 ```
+
+`pnpm verify` 가 도는 단계: typecheck · lint · test · build(turbo) → api:check · tokens:check(생성물이 원본과 같은지) → verify:mobile(Flutter analyze · test).
+JS 만 볼 땐 `pnpm verify:js`, Flutter 만 볼 땐 `pnpm verify:mobile`. GitHub Actions(`.github/workflows/verify.yml`)도 push·PR 마다 `pnpm verify` 하나만 돌립니다.
+AI 에이전트용 규칙은 [AGENTS.md](AGENTS.md).
 
 손님 앱 실행은 [apps/app/README.md](apps/app/README.md) 참고.
 
