@@ -26,7 +26,7 @@
       "CreateOrderItem": {
         "properties": {
           "extraShot": {
-            "description": "샷 추가 횟수 (0~2) — 커피만, 한 번에 500원",
+            "description": "샷 추가 횟수 0~2번 · 커피 메뉴만 · 한 번에 500원",
             "maximum": 2,
             "minimum": 0,
             "type": "integer"
@@ -153,7 +153,7 @@
         "additionalProperties": false,
         "properties": {
           "extraShot": {
-            "description": "샷 추가 횟수 (0~2) — 커피만, 한 번에 500원",
+            "description": "샷 추가 횟수 0~2번 · 커피 메뉴만 · 한 번에 500원",
             "maximum": 2,
             "minimum": 0,
             "type": "integer"

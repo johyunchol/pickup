@@ -23,7 +23,7 @@ export const OrderLine = z
     name: z.string(),
     price: z.int().nonnegative(),
     quantity: z.int().positive(),
-    extraShot: z.int().min(0).max(2).meta({ description: "샷 추가 횟수 (0~2) — 커피만, 한 번에 500원" }),
+    extraShot: z.int().min(0).max(2).meta({ description: "샷 추가 횟수 0~2번 · 커피 메뉴만 · 한 번에 500원" }),
   })
   .meta({ id: "OrderLine" });
 export type OrderLine = z.infer<typeof OrderLine>;
@@ -58,7 +58,7 @@ export const CreateOrderItem = z
   .object({
     menuId: z.int().positive(),
     quantity: z.int().min(1).max(20),
-    extraShot: z.int().min(0).max(2).meta({ description: "샷 추가 횟수 (0~2) — 커피만, 한 번에 500원" }),
+    extraShot: z.int().min(0).max(2).meta({ description: "샷 추가 횟수 0~2번 · 커피 메뉴만 · 한 번에 500원" }),
   })
   .meta({ id: "CreateOrderItem" });
 export type CreateOrderItem = z.infer<typeof CreateOrderItem>;
