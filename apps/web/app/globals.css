@@ -14,7 +14,8 @@ body {
   min-height: 100vh;
   background: var(--color-bg);
   color: var(--color-text);
-  font-family: var(--font-family);
+  /* next/font 가 내려준 Noto Sans KR 을 먼저, 없으면 토큰의 글꼴 목록으로 */
+  font-family: var(--font-noto-sans-kr), var(--font-family);
   font-size: var(--font-size-md);
   line-height: 1.5;
 }
@@ -24,4 +25,8 @@ h2,
 p,
 ul {
   margin: 0;
+}
+
+button {
+  font: inherit;
 }

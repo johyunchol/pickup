@@ -1,0 +1,421 @@
+{
+  "components": {
+    "schemas": {
+      "CreateOrderBody": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CreateOrderItem"
+            },
+            "maxItems": 20,
+            "minItems": 1,
+            "type": "array"
+          },
+          "nickname": {
+            "maxLength": 12,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "nickname",
+          "items"
+        ],
+        "type": "object"
+      },
+      "CreateOrderItem": {
+        "properties": {
+          "menuId": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "quantity": {
+            "maximum": 20,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "menuId",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "MenuCategory": {
+        "description": "메뉴 분류 — 손님 앱의 카테고리 칩과 같다",
+        "enum": [
+          "coffee",
+          "non_coffee",
+          "dessert"
+        ],
+        "type": "string"
+      },
+      "MenuItem": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/MenuCategory"
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "description": "원 단위 가격",
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "soldOut": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "category",
+          "price",
+          "soldOut"
+        ],
+        "type": "object"
+      },
+      "Order": {
+        "additionalProperties": false,
+        "properties": {
+          "history": {
+            "description": "상태가 바뀐 시각 — 첫 줄이 접수(주문) 시각",
+            "items": {
+              "$ref": "#/components/schemas/StatusChange"
+            },
+            "type": "array"
+          },
+          "id": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/OrderLine"
+            },
+            "type": "array"
+          },
+          "nickname": {
+            "type": "string"
+          },
+          "number": {
+            "description": "그날의 주문 번호 — 날짜가 바뀌면 1부터 다시",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          },
+          "total": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "number",
+          "nickname",
+          "lines",
+          "total",
+          "status",
+          "history"
+        ],
+        "type": "object"
+      },
+      "OrderLine": {
+        "additionalProperties": false,
+        "properties": {
+          "menuId": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "quantity": {
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "menuId",
+          "name",
+          "price",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "OrderStatus": {
+        "description": "received 접수 → making 제조 중 → ready 픽업 대기 → done 완료",
+        "enum": [
+          "received",
+          "making",
+          "ready",
+          "done"
+        ],
+        "type": "string"
+      },
+      "StatusChange": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/OrderStatus"
+          }
+        },
+        "required": [
+          "status",
+          "at"
+        ],
+        "type": "object"
+      },
+      "UpdateMenuItemBody": {
+        "properties": {
+          "soldOut": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "soldOut"
+        ],
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "contact": {},
+    "description": "생성 파일 — 고치지 마세요. 원본: apps/api 의 컨트롤러와 packages/contract (pnpm api:generate)",
+    "title": "pickup api",
+    "version": "0.1.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/menu": {
+      "get": {
+        "operationId": "listMenu",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MenuItem"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "메뉴 목록",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/menu/{id}": {
+      "patch": {
+        "operationId": "updateMenuItem",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMenuItemBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MenuItem"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "메뉴 품절 켜고 끄기 (사장님)",
+        "tags": [
+          "menu"
+        ]
+      }
+    },
+    "/orders": {
+      "get": {
+        "operationId": "listOrders",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/Order"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "오늘 주문 목록 (사장님)",
+        "tags": [
+          "orders"
+        ]
+      },
+      "post": {
+        "operationId": "createOrder",
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateOrderBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "주문하기 (손님)",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}": {
+      "get": {
+        "operationId": "getOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "주문 하나 (손님 — 상태 확인)",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}/advance": {
+      "post": {
+        "operationId": "advanceOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "주문을 다음 상태로 (사장님)",
+        "tags": [
+          "orders"
+        ]
+      }
+    }
+  },
+  "servers": [],
+  "tags": []
+}

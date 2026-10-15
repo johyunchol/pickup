@@ -8,6 +8,7 @@ cd "$(dirname "$0")/.."
 # 새 앱·패키지는 여기와 루트 pubspec.yaml 의 workspace 목록에 같이 추가한다.
 MEMBERS=(
   apps/app
+  flutter_packages/app_api
   flutter_packages/app_core
   flutter_packages/app_ui
 )

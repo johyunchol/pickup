@@ -1,6 +1,11 @@
 # pickup_app
 
-pickup 손님 앱 (Flutter, iOS·Android). 첫 화면에서 api 의 `GET /menu` 를 불러 메뉴를 보여 준다.
+pickup 손님 앱 (Flutter, iOS·Android). 메뉴 → 주문(닉네임) → 내 주문 상태(3초마다 갱신).
+
+api 호출은 생성 클라이언트 `flutter_packages/app_api` 의 `PickupApi` 만 쓴다 — 손으로 쓴 모델·호출 코드를 두지 않는다.
+api 모양이 바뀌면 `packages/contract`(스키마)·`apps/api`(컨트롤러)를 고치고 저장소 루트에서 `pnpm api:generate`.
+
+글꼴 Noto Sans KR 은 google_fonts 가 처음 쓸 때 내려받아 기기에 캐시한다 (`flutter_packages/app_ui`).
 
 ```bash
 # 저장소 루트에서 api 를 먼저 띄운다

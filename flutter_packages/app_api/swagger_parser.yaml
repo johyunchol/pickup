@@ -1,0 +1,17 @@
+# openapi/openapi.json → lib/src/generated (Retrofit 클라이언트 + json_serializable 모델)
+# 그다음 build_runner 가 *.g.dart 를 만든다. 둘 다 루트의 `pnpm api:generate` 가 순서대로 부른다.
+swagger_parser:
+  schema_path: ../../openapi/openapi.json
+  output_directory: lib/src/generated
+  name: pickup_api
+  language: dart
+  json_serializer: json_serializable
+  # 태그(menu · orders)마다 클라이언트 하나, 그 둘을 묶는 PickupApi
+  root_client: true
+  root_client_name: PickupApi
+  client_postfix: Client
+  export_file: true
+  # API 의 enum 값("non_coffee")과 그대로 오가게
+  enums_to_json: true
+  unknown_enum_value: false
+  mark_files_as_generated: true

@@ -8,5 +8,6 @@ environment:
 
 workspace:
   - apps/app
+  - flutter_packages/app_api
   - flutter_packages/app_core
   - flutter_packages/app_ui

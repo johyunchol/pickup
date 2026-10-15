@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'tokens.g.dart';
+
+/// [style] 에 토큰 글꼴(Noto Sans KR)을 입힌다.
+///
+/// google_fonts 는 굵기마다 글꼴 파일이 따로라, 테마의 글자 스타일과 다른 굵기를 쓰는
+/// TextStyle 은 이걸 거쳐야 그 굵기의 파일을 불러온다. 파일은 처음 쓸 때 받아 기기에 캐시한다.
+TextStyle pickupFont([TextStyle? style]) =>
+    GoogleFonts.getFont(PickupFont.family, textStyle: style);
 
 /// 토큰으로 만든 앱 테마 — 사장님 웹(packages/tokens 의 CSS 변수)과 같은 값을 쓴다.
 ThemeData pickupTheme() {
@@ -23,16 +31,19 @@ ThemeData pickupTheme() {
     onErrorContainer: PickupColors.danger,
   );
 
-  TextStyle style(double size, FontWeight weight, [Color? color]) => TextStyle(
-    fontSize: size,
-    fontWeight: weight,
-    color: color ?? PickupColors.text,
+  TextStyle style(double size, FontWeight weight, [Color? color]) => pickupFont(
+    TextStyle(
+      fontSize: size,
+      fontWeight: weight,
+      color: color ?? PickupColors.text,
+    ),
   );
 
   return ThemeData(
     colorScheme: colorScheme,
     scaffoldBackgroundColor: PickupColors.bg,
-    fontFamily: PickupFont.family,
+    // 글자 스타일을 따로 주지 않은 곳(버튼·입력 칸 등)의 기본 글꼴
+    fontFamily: pickupFont().fontFamily,
     textTheme: TextTheme(
       displayLarge: style(PickupFontSize.display, PickupFontWeight.bold),
       headlineMedium: style(PickupFontSize.xl3, PickupFontWeight.bold),

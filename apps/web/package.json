@@ -10,6 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@pickup/contract": "workspace:*",
     "@pickup/tokens": "workspace:*",
     "next": "^16.4.0",
     "react": "^19.3.0",

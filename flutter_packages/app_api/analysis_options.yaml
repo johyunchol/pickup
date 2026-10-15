@@ -1,0 +1,6 @@
+include: package:lints/recommended.yaml
+
+analyzer:
+  # 생성 코드(swagger_parser · build_runner)는 고치지 않으니 검사하지 않는다.
+  exclude:
+    - lib/src/generated/**

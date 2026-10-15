@@ -9,13 +9,15 @@ environment:
 resolution: workspace
 
 dependencies:
+  app_api:
+    path: ../../flutter_packages/app_api
   app_core:
     path: ../../flutter_packages/app_core
   app_ui:
     path: ../../flutter_packages/app_ui
   flutter:
     sdk: flutter
-  http: ^1.6.0
+  dio: ^5.11.1
 
 dev_dependencies:
   flutter_test:

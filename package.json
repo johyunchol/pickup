@@ -9,7 +9,9 @@
     "typecheck": "turbo run typecheck",
     "verify:mobile": "bash tools/verify_mobile.sh",
     "tokens:generate": "pnpm --filter @pickup/tokens generate",
-    "tokens:check": "pnpm --filter @pickup/tokens check"
+    "tokens:check": "pnpm --filter @pickup/tokens check",
+    "api:generate": "pnpm --filter @pickup/contract build && pnpm --filter @pickup/api openapi:generate && bash tools/api_dart.sh",
+    "api:check": "pnpm --filter @pickup/contract build && pnpm --filter @pickup/api openapi:check && bash tools/api_dart.sh --check"
   },
   "devDependencies": {
     "turbo": "^2.11.8"
