@@ -9,7 +9,8 @@
     "openapi:generate": "nest build && node dist/generate-openapi.js",
     "openapi:check": "nest build && node dist/generate-openapi.js --check",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "tsc -p tsconfig.json && node --test \"dist/**/*.spec.js\""
   },
   "dependencies": {
     "@nestjs/common": "^12.1.3",

@@ -32,7 +32,7 @@ void main() {
     expect(jsonDecode(sent.body), {
       'nickname': '도윤',
       'items': [
-        {'menuId': 1, 'quantity': 1},
+        {'menuId': 1, 'quantity': 1, 'extraShot': 0},
       ],
     });
 

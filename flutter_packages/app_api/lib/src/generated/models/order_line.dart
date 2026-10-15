@@ -9,6 +9,7 @@ part 'order_line.g.dart';
 @JsonSerializable()
 class OrderLine {
   const OrderLine({
+    required this.extraShot,
     required this.menuId,
     required this.name,
     required this.price,
@@ -17,6 +18,8 @@ class OrderLine {
   
   factory OrderLine.fromJson(Map<String, Object?> json) => _$OrderLineFromJson(json);
   
+  /// 샷 추가 횟수 (0~2) — 커피만, 한 번에 500원
+  final int extraShot;
   final int menuId;
   final String name;
   final int price;

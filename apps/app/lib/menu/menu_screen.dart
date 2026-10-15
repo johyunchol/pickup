@@ -7,6 +7,7 @@ import '../cart.dart';
 import '../labels.dart';
 import '../order/checkout_screen.dart';
 import '../order/order_status_screen.dart';
+import '../shot.dart';
 
 // 화면 디자인: design/pickup.pen 의 "03 손님 · 메뉴"
 class MenuScreen extends StatefulWidget {
@@ -117,8 +118,10 @@ class _MenuScreenState extends State<MenuScreen> {
                       itemBuilder: (context, i) => _MenuCard(
                         item: menu[i],
                         quantity: _cart.quantityOf(menu[i].id),
+                        extraShot: _cart.extraShotOf(menu[i].id),
                         onAdd: () => _cart.add(menu[i]),
                         onRemove: () => _cart.remove(menu[i]),
+                        onExtraShot: (n) => _cart.setExtraShot(menu[i], n),
                       ),
                     ),
                   );
@@ -324,19 +327,25 @@ class _MenuCard extends StatelessWidget {
   const _MenuCard({
     required this.item,
     required this.quantity,
+    required this.extraShot,
     required this.onAdd,
     required this.onRemove,
+    required this.onExtraShot,
   });
 
   final MenuItem item;
   final int quantity;
+  final int extraShot;
   final VoidCallback onAdd;
   final VoidCallback onRemove;
+  final ValueChanged<int> onExtraShot;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final muted = item.soldOut;
+    // 커피를 담았을 때만 샷 추가를 고른다.
+    final showShot = !muted && quantity > 0 && item.canAddShot;
     return Container(
       padding: const EdgeInsets.all(PickupSpace.s3),
       decoration: BoxDecoration(
@@ -346,81 +355,191 @@ class _MenuCard extends StatelessWidget {
           color: quantity > 0 ? PickupColors.primary : PickupColors.border,
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Container(
-            width: 72,
-            height: 72,
-            decoration: BoxDecoration(
-              color: muted
-                  ? PickupColors.surfaceMuted
-                  : PickupColors.primarySoft,
-              borderRadius: BorderRadius.circular(PickupRadius.md),
-            ),
-            child: Icon(
-              item.category.icon,
-              size: 32,
-              color: muted ? PickupColors.textMuted : PickupColors.primary,
-            ),
-          ),
-          const SizedBox(width: PickupSpace.s4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+          Row(
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: muted
+                      ? PickupColors.surfaceMuted
+                      : PickupColors.primarySoft,
+                  borderRadius: BorderRadius.circular(PickupRadius.md),
+                ),
+                child: Icon(
+                  item.category.icon,
+                  size: 32,
+                  color: muted ? PickupColors.textMuted : PickupColors.primary,
+                ),
+              ),
+              const SizedBox(width: PickupSpace.s4),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Flexible(
-                      child: Text(
-                        item.name,
-                        style: text.titleMedium?.copyWith(
-                          color: muted ? PickupColors.textMuted : null,
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            item.name,
+                            style: text.titleMedium?.copyWith(
+                              color: muted ? PickupColors.textMuted : null,
+                            ),
+                          ),
                         ),
+                        if (muted) ...[
+                          const SizedBox(width: PickupSpace.s2),
+                          const _SoldOutBadge(),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: PickupSpace.s1),
+                    Text(
+                      item.description,
+                      style: text.bodySmall,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: PickupSpace.s1),
+                    Text(
+                      formatPrice(item.price + extraShot * extraShotPrice),
+                      style: text.titleMedium?.copyWith(
+                        color: muted ? PickupColors.textMuted : null,
                       ),
                     ),
-                    if (muted) ...[
-                      const SizedBox(width: PickupSpace.s2),
-                      const _SoldOutBadge(),
-                    ],
                   ],
                 ),
-                const SizedBox(height: PickupSpace.s1),
-                Text(
-                  item.description,
-                  style: text.bodySmall,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: PickupSpace.s1),
-                Text(
-                  formatPrice(item.price),
-                  style: text.titleMedium?.copyWith(
-                    color: muted ? PickupColors.textMuted : null,
-                  ),
-                ),
+              ),
+              if (!muted) ...[
+                const SizedBox(width: PickupSpace.s2),
+                quantity == 0
+                    ? _RoundButton(
+                        icon: Icons.add_rounded,
+                        size: 36,
+                        iconSize: 20,
+                        background: PickupColors.primarySoft,
+                        foreground: PickupColors.primary,
+                        tooltip: '${item.name} 담기',
+                        onPressed: onAdd,
+                      )
+                    : _Stepper(
+                        name: item.name,
+                        quantity: quantity,
+                        onAdd: onAdd,
+                        onRemove: onRemove,
+                      ),
               ],
+            ],
+          ),
+          if (showShot)
+            _ShotPicker(
+              name: item.name,
+              extraShot: extraShot,
+              onChanged: onExtraShot,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 샷 추가 없음 · +1 · +2
+class _ShotPicker extends StatelessWidget {
+  const _ShotPicker({
+    required this.name,
+    required this.extraShot,
+    required this.onChanged,
+  });
+
+  final String name;
+  final int extraShot;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Theme.of(context).textTheme;
+    return Container(
+      margin: const EdgeInsets.only(top: PickupSpace.s3),
+      padding: const EdgeInsets.only(top: PickupSpace.s3),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: PickupColors.border)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              '샷 추가 · 한 번에 ${formatPrice(extraShotPrice)}',
+              style: text.bodySmall,
             ),
           ),
-          if (!muted) ...[
-            const SizedBox(width: PickupSpace.s2),
-            quantity == 0
-                ? _RoundButton(
-                    icon: Icons.add_rounded,
-                    size: 36,
-                    iconSize: 20,
-                    background: PickupColors.primarySoft,
-                    foreground: PickupColors.primary,
-                    tooltip: '${item.name} 담기',
-                    onPressed: onAdd,
-                  )
-                : _Stepper(
-                    name: item.name,
-                    quantity: quantity,
-                    onAdd: onAdd,
-                    onRemove: onRemove,
-                  ),
-          ],
+          for (var n = 0; n <= maxExtraShot; n++)
+            Padding(
+              padding: const EdgeInsets.only(left: PickupSpace.s2),
+              child: _ShotChip(
+                label: n == 0 ? '없음' : '+$n',
+                tooltip: n == 0 ? '$name 샷 추가 없음' : '$name 샷 +$n',
+                selected: n == extraShot,
+                onTap: () => onChanged(n),
+              ),
+            ),
         ],
+      ),
+    );
+  }
+}
+
+class _ShotChip extends StatelessWidget {
+  const _ShotChip({
+    required this.label,
+    required this.tooltip,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final String tooltip;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: tooltip,
+      child: Semantics(
+        selected: selected,
+        button: true,
+        child: Material(
+          color: selected ? PickupColors.primary : PickupColors.surface,
+          shape: StadiumBorder(
+            side: BorderSide(
+              color: selected ? PickupColors.primary : PickupColors.border,
+            ),
+          ),
+          child: InkWell(
+            customBorder: const StadiumBorder(),
+            onTap: onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: PickupSpace.s3,
+                vertical: PickupSpace.s1,
+              ),
+              child: Text(
+                label,
+                style: pickupFont(
+                  TextStyle(
+                    color: selected
+                        ? PickupColors.onPrimary
+                        : PickupColors.text,
+                    fontSize: PickupFontSize.xs,
+                    fontWeight: PickupFontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

@@ -13,16 +13,25 @@ export function nextStatus(status: OrderStatus): OrderStatus | undefined {
   return ORDER_STATUSES[ORDER_STATUSES.indexOf(status) + 1];
 }
 
-/** 주문할 때 고른 메뉴 한 줄 — 이름·가격은 주문 시점 값으로 남긴다. */
+/** 샷 추가 한 번 값(원). 샷 추가는 커피(category "coffee")만 된다. */
+export const EXTRA_SHOT_PRICE = 500;
+
+/** 주문할 때 고른 메뉴 한 줄 — 이름·가격은 주문 시점 값으로 남긴다. price 는 샷 추가를 뺀 메뉴 가격. */
 export const OrderLine = z
   .object({
     menuId: z.int().positive(),
     name: z.string(),
     price: z.int().nonnegative(),
     quantity: z.int().positive(),
+    extraShot: z.int().min(0).max(2).meta({ description: "샷 추가 횟수 (0~2) — 커피만, 한 번에 500원" }),
   })
   .meta({ id: "OrderLine" });
 export type OrderLine = z.infer<typeof OrderLine>;
+
+/** 한 줄 금액 — (메뉴 가격 + 샷 추가) × 수량 */
+export function lineAmount(line: Pick<OrderLine, "price" | "quantity" | "extraShot">): number {
+  return (line.price + line.extraShot * EXTRA_SHOT_PRICE) * line.quantity;
+}
 
 export const StatusChange = z
   .object({
@@ -49,6 +58,7 @@ export const CreateOrderItem = z
   .object({
     menuId: z.int().positive(),
     quantity: z.int().min(1).max(20),
+    extraShot: z.int().min(0).max(2).meta({ description: "샷 추가 횟수 (0~2) — 커피만, 한 번에 500원" }),
   })
   .meta({ id: "CreateOrderItem" });
 export type CreateOrderItem = z.infer<typeof CreateOrderItem>;

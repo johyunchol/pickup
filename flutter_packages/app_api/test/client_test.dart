@@ -10,9 +10,15 @@ const _orderJson = {
   'number': 42,
   'nickname': '도윤',
   'lines': [
-    {'menuId': 1, 'name': '아메리카노', 'price': 4500, 'quantity': 2},
+    {
+      'menuId': 1,
+      'name': '아메리카노',
+      'price': 4500,
+      'quantity': 2,
+      'extraShot': 1,
+    },
   ],
-  'total': 9000,
+  'total': 10000,
   'status': 'making',
   'history': [
     {'status': 'received', 'at': '2026-10-15T05:28:00.000Z'},
@@ -69,7 +75,7 @@ void main() {
     final order = await api.orders.createOrder(
       body: const CreateOrderBody(
         nickname: '도윤',
-        items: [CreateOrderItem(menuId: 1, quantity: 2)],
+        items: [CreateOrderItem(menuId: 1, quantity: 2, extraShot: 1)],
       ),
     );
 
@@ -78,12 +84,13 @@ void main() {
     expect(jsonDecode(sentBody!), {
       'nickname': '도윤',
       'items': [
-        {'menuId': 1, 'quantity': 2},
+        {'menuId': 1, 'quantity': 2, 'extraShot': 1},
       ],
     });
     expect(order.number, 42);
     expect(order.status, OrderStatus.making);
     expect(order.lines.single.name, '아메리카노');
+    expect(order.lines.single.extraShot, 1);
     expect(order.history.first.at, DateTime.utc(2026, 10, 15, 5, 28));
   });
 

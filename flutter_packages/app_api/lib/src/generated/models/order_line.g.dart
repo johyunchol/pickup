@@ -7,6 +7,7 @@ part of 'order_line.dart';
 // **************************************************************************
 
 OrderLine _$OrderLineFromJson(Map<String, dynamic> json) => OrderLine(
+  extraShot: (json['extraShot'] as num).toInt(),
   menuId: (json['menuId'] as num).toInt(),
   name: json['name'] as String,
   price: (json['price'] as num).toInt(),
@@ -14,6 +15,7 @@ OrderLine _$OrderLineFromJson(Map<String, dynamic> json) => OrderLine(
 );
 
 Map<String, dynamic> _$OrderLineToJson(OrderLine instance) => <String, dynamic>{
+  'extraShot': instance.extraShot,
   'menuId': instance.menuId,
   'name': instance.name,
   'price': instance.price,

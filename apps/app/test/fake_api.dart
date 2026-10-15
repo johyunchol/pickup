@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:app_api/app_api.dart';
 import 'package:dio/dio.dart';
+import 'package:pickup_app/shot.dart';
 
 const testMenu = [
   MenuItem(
@@ -96,6 +97,7 @@ class FakeApi implements HttpClientAdapter {
               name: m.name,
               price: m.price,
               quantity: i.quantity,
+              extraShot: i.extraShot,
             );
           }(),
       ];
@@ -104,7 +106,7 @@ class FakeApi implements HttpClientAdapter {
         number: 42,
         nickname: body.nickname,
         lines: lines,
-        total: lines.fold(0, (s, l) => s + l.price * l.quantity),
+        total: lines.fold(0, (s, l) => s + l.amount),
         status: OrderStatus.received,
         history: [
           StatusChange(

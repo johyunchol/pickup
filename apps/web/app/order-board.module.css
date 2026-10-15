@@ -147,6 +147,23 @@
   justify-content: space-between;
 }
 
+.name {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* 샷 추가 — 만들 때 놓치지 않게 이름 옆에 */
+.shot {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 20px;
+}
+
 .qty {
   font-weight: var(--font-weight-bold);
 }

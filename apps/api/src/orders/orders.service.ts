@@ -1,5 +1,5 @@
-import { ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { nextStatus, type CreateOrderBody, type Order, type OrderLine } from "@pickup/contract";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
+import { lineAmount, nextStatus, type CreateOrderBody, type Order, type OrderLine } from "@pickup/contract";
 import { MenuService } from "../menu/menu.service";
 
 /** 서버 시간대 기준 날짜 — 주문 번호는 이 값이 바뀌면 1부터 다시 센다. */
@@ -30,18 +30,27 @@ export class OrdersService {
   }
 
   create(input: CreateOrderBody, now = new Date()): Order {
-    // 같은 메뉴를 여러 줄로 보내도 한 줄로 합친다.
-    const quantities = new Map<number, number>();
-    for (const { menuId, quantity } of input.items) {
-      quantities.set(menuId, (quantities.get(menuId) ?? 0) + quantity);
+    // 같은 메뉴·같은 샷 추가를 여러 줄로 보내도 한 줄로 합친다.
+    const merged = new Map<string, { menuId: number; extraShot: number; quantity: number }>();
+    for (const { menuId, extraShot, quantity } of input.items) {
+      const key = `${menuId}:${extraShot}`;
+      const prev = merged.get(key);
+      merged.set(key, { menuId, extraShot, quantity: (prev?.quantity ?? 0) + quantity });
     }
 
-    const lines: OrderLine[] = [...quantities].map(([menuId, quantity]) => {
+    const lines: OrderLine[] = [...merged.values()].map(({ menuId, extraShot, quantity }) => {
       const item = this.menuService.findOne(menuId);
+      if (extraShot > 0 && item.category !== "coffee") {
+        throw new BadRequestException({
+          statusCode: 400,
+          code: "VALIDATION_FAILED",
+          message: `샷 추가는 커피만 할 수 있어요: ${item.name}`,
+        });
+      }
       if (item.soldOut) {
         throw new ConflictException({ statusCode: 409, code: "CONFLICT", message: `품절된 메뉴가 있어요: ${item.name}` });
       }
-      return { menuId, name: item.name, price: item.price, quantity };
+      return { menuId, name: item.name, price: item.price, quantity, extraShot };
     });
 
     const today = dayKey(now);
@@ -52,7 +61,7 @@ export class OrdersService {
       number: ++this.counter.number,
       nickname: input.nickname,
       lines,
-      total: lines.reduce((sum, l) => sum + l.price * l.quantity, 0),
+      total: lines.reduce((sum, l) => sum + lineAmount(l), 0),
       status: "received",
       history: [{ status: "received", at: now.toISOString() }],
     };

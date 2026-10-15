@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../cart.dart';
+import '../shot.dart';
 import 'order_widgets.dart';
 
 /// 장바구니를 확인하고 닉네임을 넣어 주문한다. 주문이 되면 그 [Order] 를 들고 돌아간다.
@@ -78,8 +79,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       Text('주문 내역', style: text.titleMedium),
                       for (final l in cart.lines)
                         AmountRow(
-                          label: '${l.item.name} × ${l.quantity}',
-                          amount: l.item.price * l.quantity,
+                          label:
+                              '${nameWithShot(l.item.name, l.extraShot)} × ${l.quantity}',
+                          amount: Cart.amountOf(l),
                         ),
                       TotalRow(total: cart.total),
                     ],

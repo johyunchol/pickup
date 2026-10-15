@@ -8,9 +8,14 @@ part of 'create_order_item.dart';
 
 CreateOrderItem _$CreateOrderItemFromJson(Map<String, dynamic> json) =>
     CreateOrderItem(
+      extraShot: (json['extraShot'] as num).toInt(),
       menuId: (json['menuId'] as num).toInt(),
       quantity: (json['quantity'] as num).toInt(),
     );
 
 Map<String, dynamic> _$CreateOrderItemToJson(CreateOrderItem instance) =>
-    <String, dynamic>{'menuId': instance.menuId, 'quantity': instance.quantity};
+    <String, dynamic>{
+      'extraShot': instance.extraShot,
+      'menuId': instance.menuId,
+      'quantity': instance.quantity,
+    };

@@ -6,6 +6,7 @@ import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
 
 import '../labels.dart';
+import '../shot.dart';
 import 'order_widgets.dart';
 
 /// 손님 앱의 갱신 주기 — 사장님이 상태를 넘기면 늦어도 이만큼 뒤에 보인다.
@@ -92,8 +93,9 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                       Text('주문 내역', style: text.titleMedium),
                       for (final l in order.lines)
                         AmountRow(
-                          label: '${l.name} × ${l.quantity}',
-                          amount: l.price * l.quantity,
+                          label:
+                              '${nameWithShot(l.name, l.extraShot)} × ${l.quantity}',
+                          amount: l.amount,
                         ),
                       TotalRow(total: order.total),
                     ],

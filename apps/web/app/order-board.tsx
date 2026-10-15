@@ -113,8 +113,12 @@ function OrderCard({
       {!doneAt && (
         <ul className={styles.items}>
           {order.lines.map((line) => (
-            <li key={line.menuId}>
-              <span>{line.name}</span>
+            // 같은 메뉴도 샷 추가가 다르면 다른 줄이다.
+            <li key={`${line.menuId}-${line.extraShot}`}>
+              <span className={styles.name}>
+                {line.name}
+                {line.extraShot > 0 && <span className={styles.shot}>샷 +{line.extraShot}</span>}
+              </span>
               <span className={styles.qty}>× {line.quantity}</span>
             </li>
           ))}
