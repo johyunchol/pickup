@@ -189,12 +189,13 @@
         "type": "object"
       },
       "OrderStatus": {
-        "description": "received 접수 → making 제조 중 → ready 픽업 대기 → done 완료",
+        "description": "received 접수 → making 제조 중 → ready 픽업 대기 → done 완료 · 접수 상태에서만 cancelled 취소로 갈 수 있다",
         "enum": [
           "received",
           "making",
           "ready",
-          "done"
+          "done",
+          "cancelled"
         ],
         "type": "string"
       },
@@ -424,6 +425,40 @@
           }
         },
         "summary": "주문을 다음 상태로 (사장님)",
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/orders/{id}/cancel": {
+      "post": {
+        "operationId": "cancelOrder",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991,
+              "minimum": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Order"
+                }
+              }
+            },
+            "description": ""
+          }
+        },
+        "summary": "주문 취소 (손님 — 접수 상태에서만)",
         "tags": [
           "orders"
         ]

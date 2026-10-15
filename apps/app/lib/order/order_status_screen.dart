@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:app_api/app_api.dart';
 import 'package:app_core/app_core.dart';
 import 'package:app_ui/app_ui.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 
 import '../labels.dart';
@@ -11,6 +12,14 @@ import 'order_widgets.dart';
 
 /// 손님 앱의 갱신 주기 — 사장님이 상태를 넘기면 늦어도 이만큼 뒤에 보인다.
 const orderPollInterval = Duration(seconds: 3);
+
+/// 진행 막대의 단계 — 취소는 여기서 빠진다.
+const _steps = [
+  OrderStatus.received,
+  OrderStatus.making,
+  OrderStatus.ready,
+  OrderStatus.done,
+];
 
 // 화면 디자인: design/pickup.pen 의 "04 손님 · 내 주문 상태"
 class OrderStatusScreen extends StatefulWidget {
@@ -33,6 +42,8 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
   late Order _order = widget.initial;
   Timer? _timer;
   bool _offline = false;
+  bool _cancelling = false;
+  String? _cancelError;
 
   @override
   void initState() {
@@ -48,7 +59,10 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
 
   /// 한 번 불러오고 끝나면 다음을 예약한다 — 응답이 늦어도 요청이 겹치지 않는다.
   void _schedule() {
-    if (_order.status == OrderStatus.done) return;
+    if (_order.status == OrderStatus.done ||
+        _order.status == OrderStatus.cancelled) {
+      return;
+    }
     _timer = Timer(orderPollInterval, _poll);
   }
 
@@ -65,6 +79,48 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
       setState(() => _offline = true);
     }
     _schedule();
+  }
+
+  Future<void> _cancel() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('주문을 취소할까요?'),
+        content: const Text('만들기 시작하기 전까지만 취소할 수 있어요.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('그대로 둘게요'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: TextButton.styleFrom(foregroundColor: PickupColors.danger),
+            child: const Text('주문 취소'),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+
+    setState(() {
+      _cancelling = true;
+      _cancelError = null;
+    });
+    try {
+      final order = await widget.api.orders.cancelOrder(id: _order.id);
+      if (!mounted) return;
+      _timer?.cancel();
+      setState(() => _order = order);
+    } on Exception catch (e) {
+      if (!mounted) return;
+      // 그사이 제조가 시작됐으면 서버가 그 이유를 알려 준다 — 바뀐 상태도 바로 불러온다.
+      final message = e is DioException ? e.serverMessage : null;
+      setState(() => _cancelError = message ?? '취소하지 못했어요. 잠시 뒤 다시 시도해 주세요.');
+      _timer?.cancel();
+      unawaited(_poll());
+    } finally {
+      if (mounted) setState(() => _cancelling = false);
+    }
   }
 
   @override
@@ -86,8 +142,10 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                 children: [
                   _Hero(order: order, offline: _offline),
                   const SizedBox(height: PickupSpace.s5),
-                  _Progress(order: order),
-                  const SizedBox(height: PickupSpace.s5),
+                  if (order.status != OrderStatus.cancelled) ...[
+                    _Progress(order: order),
+                    const SizedBox(height: PickupSpace.s5),
+                  ],
                   SectionCard(
                     children: [
                       Text('주문 내역', style: text.titleMedium),
@@ -100,38 +158,89 @@ class _OrderStatusScreenState extends State<OrderStatusScreen> {
                       TotalRow(total: order.total),
                     ],
                   ),
-                  const SizedBox(height: PickupSpace.s5),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: PickupSpace.s4,
-                      vertical: PickupSpace.s3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: PickupColors.primarySoft,
-                      borderRadius: BorderRadius.circular(PickupRadius.md),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.storefront_outlined,
-                          size: 20,
-                          color: PickupColors.primary,
-                        ),
-                        const SizedBox(width: PickupSpace.s3),
-                        Expanded(
-                          child: Text(
-                            '번호가 불리면 왼쪽 픽업대에서 받아 가세요',
-                            style: text.bodyMedium?.copyWith(
-                              color: PickupColors.primary,
+                  if (order.status != OrderStatus.cancelled) ...[
+                    const SizedBox(height: PickupSpace.s5),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: PickupSpace.s4,
+                        vertical: PickupSpace.s3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: PickupColors.primarySoft,
+                        borderRadius: BorderRadius.circular(PickupRadius.md),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.storefront_outlined,
+                            size: 20,
+                            color: PickupColors.primary,
+                          ),
+                          const SizedBox(width: PickupSpace.s3),
+                          Expanded(
+                            child: Text(
+                              '번호가 불리면 왼쪽 픽업대에서 받아 가세요',
+                              style: text.bodyMedium?.copyWith(
+                                color: PickupColors.primary,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
             ),
+            // 제조가 시작되기 전(접수)까지만 취소할 수 있다. 취소하지 못한 이유도 여기에 — 스크롤하지 않아도 보이게.
+            if (order.status == OrderStatus.received || _cancelError != null)
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  PickupSpace.s4,
+                  PickupSpace.s3,
+                  PickupSpace.s4,
+                  PickupSpace.s3,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: PickupSpace.s3,
+                  children: [
+                    if (_cancelError != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: PickupSpace.s4,
+                          vertical: PickupSpace.s3,
+                        ),
+                        decoration: BoxDecoration(
+                          color: PickupColors.dangerSoft,
+                          borderRadius: BorderRadius.circular(PickupRadius.md),
+                        ),
+                        child: Text(
+                          _cancelError!,
+                          style: text.bodyMedium?.copyWith(
+                            color: PickupColors.danger,
+                          ),
+                        ),
+                      ),
+                    if (order.status == OrderStatus.received)
+                      OutlinedButton(
+                        onPressed: _cancelling ? null : _cancel,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: PickupColors.danger,
+                          side: const BorderSide(color: PickupColors.border),
+                          minimumSize: const Size.fromHeight(52),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(
+                              PickupRadius.lg,
+                            ),
+                          ),
+                          textStyle: text.titleMedium,
+                        ),
+                        child: Text(_cancelling ? '취소하는 중…' : '주문 취소'),
+                      ),
+                  ],
+                ),
+              ),
           ],
         ),
       ),
@@ -218,21 +327,21 @@ class _Progress extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final current = order.status.index;
+    final current = _steps.indexOf(order.status);
     final done = order.status == OrderStatus.done;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: PickupSpace.s1,
       children: [
-        for (final step in OrderStatus.values)
+        for (final (i, step) in _steps.indexed)
           Expanded(
             child: _Step(
               step: step,
               at: order.history.where((h) => h.status == step).firstOrNull?.at,
               // 지난 단계는 primary, 지금 단계는 그 상태의 색, 아직 안 온 단계는 흐리게
-              color: step.index < current || (done && step.index == current)
+              color: i < current || (done && i == current)
                   ? PickupColors.primary
-                  : step.index == current
+                  : i == current
                   ? step.color
                   : null,
             ),

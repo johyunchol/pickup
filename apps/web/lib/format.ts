@@ -19,6 +19,7 @@ export const STATUS_LABEL: Record<OrderStatus, string> = {
   making: "제조 중",
   ready: "픽업 대기",
   done: "완료",
+  cancelled: "취소",
 };
 
 export const CATEGORY_LABEL: Record<MenuCategory, string> = {

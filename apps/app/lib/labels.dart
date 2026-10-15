@@ -24,6 +24,7 @@ extension OrderStatusLabel on OrderStatus {
     OrderStatus.making => '제조 중',
     OrderStatus.ready => '픽업 대기',
     OrderStatus.done => '완료',
+    OrderStatus.cancelled => '취소',
   };
 
   /// 손님에게 보여 주는 지금 상태
@@ -32,6 +33,7 @@ extension OrderStatusLabel on OrderStatus {
     OrderStatus.making => '지금 만들고 있어요',
     OrderStatus.ready => '픽업대에 나왔어요',
     OrderStatus.done => '픽업을 마쳤어요',
+    OrderStatus.cancelled => '주문을 취소했어요',
   };
 
   String get detail => switch (this) {
@@ -39,6 +41,7 @@ extension OrderStatusLabel on OrderStatus {
     OrderStatus.making => '다 되면 번호를 불러 드릴게요',
     OrderStatus.ready => '번호를 확인하고 받아 가세요',
     OrderStatus.done => '맛있게 드세요!',
+    OrderStatus.cancelled => '다음에 또 들러 주세요',
   };
 
   IconData get icon => switch (this) {
@@ -46,6 +49,7 @@ extension OrderStatusLabel on OrderStatus {
     OrderStatus.making => Icons.coffee_maker_outlined,
     OrderStatus.ready => Icons.shopping_bag_outlined,
     OrderStatus.done => Icons.check_circle_outline_rounded,
+    OrderStatus.cancelled => Icons.cancel_outlined,
   };
 
   Color get color => switch (this) {
@@ -53,6 +57,7 @@ extension OrderStatusLabel on OrderStatus {
     OrderStatus.making => PickupColors.statusMaking,
     OrderStatus.ready => PickupColors.statusReady,
     OrderStatus.done => PickupColors.statusDone,
+    OrderStatus.cancelled => PickupColors.statusCancelled,
   };
 
   Color get softColor => switch (this) {
@@ -60,5 +65,6 @@ extension OrderStatusLabel on OrderStatus {
     OrderStatus.making => PickupColors.statusMakingSoft,
     OrderStatus.ready => PickupColors.statusReadySoft,
     OrderStatus.done => PickupColors.statusDoneSoft,
+    OrderStatus.cancelled => PickupColors.statusCancelledSoft,
   };
 }

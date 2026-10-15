@@ -95,3 +95,56 @@ test("샷 추가가 없거나 0~2 밖이면 계약 검증에서 400", async () =
     assert.equal(((await res.json()) as { code: string }).code, "VALIDATION_FAILED");
   }
 });
+
+async function newOrder(): Promise<Order> {
+  const res = await post("/orders", { nickname: "지우", items: [{ menuId: 1, quantity: 1, extraShot: 0 }] });
+  assert.equal(res.status, 201);
+  return (await res.json()) as Order;
+}
+
+test("접수 상태의 주문은 손님이 취소할 수 있고, 사장님 목록에도 취소로 보인다", async () => {
+  const order = await newOrder();
+  const res = await post(`/orders/${order.id}/cancel`, undefined);
+  assert.equal(res.status, 200);
+  const cancelled = (await res.json()) as Order;
+  assert.equal(cancelled.status, "cancelled");
+  assert.deepEqual(
+    cancelled.history.map((h) => h.status),
+    ["received", "cancelled"],
+  );
+
+  const list = (await (await fetch(`${base}/orders`)).json()) as Order[];
+  assert.equal(list.find((o) => o.id === order.id)?.status, "cancelled");
+});
+
+test("제조가 시작된 주문은 취소할 수 없다 — 409, 상태는 그대로", async () => {
+  const order = await newOrder();
+  assert.equal((await post(`/orders/${order.id}/advance`, undefined)).status, 200);
+
+  const res = await post(`/orders/${order.id}/cancel`, undefined);
+  assert.equal(res.status, 409);
+  const body = (await res.json()) as { code: string; message: string };
+  assert.equal(body.code, "CONFLICT");
+  assert.match(body.message, /만들기 시작해서 취소할 수 없어요/);
+
+  const after = (await (await fetch(`${base}/orders/${order.id}`)).json()) as Order;
+  assert.equal(after.status, "making");
+});
+
+test("취소된 주문은 다시 취소하거나 다음 단계로 넘길 수 없다", async () => {
+  const order = await newOrder();
+  assert.equal((await post(`/orders/${order.id}/cancel`, undefined)).status, 200);
+
+  for (const action of ["cancel", "advance"]) {
+    const res = await post(`/orders/${order.id}/${action}`, undefined);
+    assert.equal(res.status, 409, action);
+    assert.match(((await res.json()) as { message: string }).message, /이미 취소됐어요/);
+  }
+  const after = (await (await fetch(`${base}/orders/${order.id}`)).json()) as Order;
+  assert.equal(after.status, "cancelled");
+});
+
+test("없는 주문을 취소하면 404", async () => {
+  const res = await post("/orders/9999/cancel", undefined);
+  assert.equal(res.status, 404);
+});

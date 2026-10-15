@@ -22,4 +22,5 @@ const _$OrderStatusEnumMap = {
   OrderStatus.making: 'making',
   OrderStatus.ready: 'ready',
   OrderStatus.done: 'done',
+  OrderStatus.cancelled: 'cancelled',
 };

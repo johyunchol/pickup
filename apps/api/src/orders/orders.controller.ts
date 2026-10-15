@@ -36,4 +36,11 @@ export class OrdersController {
   advanceOrder(@Param("id", { schema: IdParam }) id: number): Order {
     return this.ordersService.advance(id);
   }
+
+  @Post(":id/cancel")
+  @ApiOperation({ summary: "주문 취소 (손님 — 접수 상태에서만)" })
+  @ContractResponse(Order)
+  cancelOrder(@Param("id", { schema: IdParam }) id: number): Order {
+    return this.ordersService.cancel(id);
+  }
 }

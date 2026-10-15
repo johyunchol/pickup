@@ -18,7 +18,7 @@ export function TopBar() {
   const pathname = usePathname();
   const { orders } = useOrders();
   const now = useMinute();
-  const active = orders?.filter((o) => o.status !== "done").length;
+  const active = orders?.filter((o) => o.status !== "done" && o.status !== "cancelled").length;
 
   return (
     <header className={styles.topBar}>

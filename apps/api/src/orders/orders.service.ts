@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
-import { lineAmount, nextStatus, type CreateOrderBody, type Order, type OrderLine } from "@pickup/contract";
+import { canCancel, lineAmount, nextStatus, type CreateOrderBody, type Order, type OrderLine } from "@pickup/contract";
 import { MenuService } from "../menu/menu.service";
 
 /** 서버 시간대 기준 날짜 — 주문 번호는 이 값이 바뀌면 1부터 다시 센다. */
@@ -76,11 +76,28 @@ export class OrdersService {
       throw new ConflictException({
         statusCode: 409,
         code: "CONFLICT",
-        message: `주문 ${order.number}번은 이미 완료됐어요`,
+        message: `주문 ${order.number}번은 이미 ${order.status === "cancelled" ? "취소" : "완료"}됐어요`,
       });
     }
     order.status = next;
     order.history.push({ status: next, at: now.toISOString() });
+    return order;
+  }
+
+  cancel(id: number, now = new Date()): Order {
+    const order = this.findOne(id);
+    if (!canCancel(order.status)) {
+      throw new ConflictException({
+        statusCode: 409,
+        code: "CONFLICT",
+        message:
+          order.status === "cancelled"
+            ? `주문 ${order.number}번은 이미 취소됐어요`
+            : `주문 ${order.number}번은 이미 만들기 시작해서 취소할 수 없어요`,
+      });
+    }
+    order.status = "cancelled";
+    order.history.push({ status: "cancelled", at: now.toISOString() });
     return order;
   }
 }

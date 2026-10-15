@@ -4,7 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-/// received 접수 → making 제조 중 → ready 픽업 대기 → done 완료
+/// received 접수 → making 제조 중 → ready 픽업 대기 → done 완료 · 접수 상태에서만 cancelled 취소로 갈 수 있다
 @JsonEnum()
 enum OrderStatus {
   @JsonValue('received')
@@ -14,7 +14,9 @@ enum OrderStatus {
   @JsonValue('ready')
   ready('ready'),
   @JsonValue('done')
-  done('done');
+  done('done'),
+  @JsonValue('cancelled')
+  cancelled('cancelled');
 
   const OrderStatus(this.json);
 

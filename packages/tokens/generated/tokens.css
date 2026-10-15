@@ -17,6 +17,8 @@
   --color-status-ready-soft: #E1EEDF;
   --color-status-done: #75675C;
   --color-status-done-soft: #EEE9E3;
+  --color-status-cancelled: #8E4F4A;
+  --color-status-cancelled-soft: #F2E3E1;
   --color-danger: #B23B2A;
   --color-danger-soft: #F7E1DD;
   --font-family: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;

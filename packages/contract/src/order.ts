@@ -4,14 +4,21 @@ import { z } from "zod";
 export const ORDER_STATUSES = ["received", "making", "ready", "done"] as const;
 
 export const OrderStatus = z
-  .enum(ORDER_STATUSES)
-  .meta({ id: "OrderStatus", description: "received 접수 → making 제조 중 → ready 픽업 대기 → done 완료" });
+  .enum([...ORDER_STATUSES, "cancelled"])
+  .meta({
+    id: "OrderStatus",
+    description: "received 접수 → making 제조 중 → ready 픽업 대기 → done 완료 · 접수 상태에서만 cancelled 취소로 갈 수 있다",
+  });
 export type OrderStatus = z.infer<typeof OrderStatus>;
 
-/** 다음 상태. 완료(done) 다음은 없다. */
+/** 다음 상태. 완료(done)·취소(cancelled) 다음은 없다. */
 export function nextStatus(status: OrderStatus): OrderStatus | undefined {
+  if (status === "cancelled") return undefined;
   return ORDER_STATUSES[ORDER_STATUSES.indexOf(status) + 1];
 }
+
+/** 손님은 제조가 시작되기 전(접수)까지만 취소할 수 있다. */
+export const canCancel = (status: OrderStatus) => status === "received";
 
 /** 샷 추가 한 번 값(원). 샷 추가는 커피(category "coffee")만 된다. */
 export const EXTRA_SHOT_PRICE = 500;

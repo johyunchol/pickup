@@ -35,4 +35,10 @@ abstract class OrdersClient {
   Future<Order> advanceOrder({
     @Path('id') required int id,
   });
+
+  /// 주문 취소 (손님 — 접수 상태에서만)
+  @POST('/orders/{id}/cancel')
+  Future<Order> cancelOrder({
+    @Path('id') required int id,
+  });
 }

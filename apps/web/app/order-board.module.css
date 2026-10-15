@@ -2,7 +2,7 @@
 .board {
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--space-6);
   height: calc(100vh - 72px);
   padding: var(--space-8);
@@ -189,6 +189,12 @@
 
 .action:not(:disabled):hover {
   filter: brightness(1.1);
+}
+
+/* 취소 — 만들지 않아도 되게 메뉴에 줄을 긋는다 */
+.cancelled .items {
+  color: var(--color-text-muted);
+  text-decoration: line-through;
 }
 
 .done .action {

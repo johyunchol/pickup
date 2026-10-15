@@ -103,6 +103,9 @@ void main() {
 
     await api.orders.advanceOrder(id: 7);
     expect(url, Uri.parse('http://api.test/orders/7/advance'));
+
+    await api.orders.cancelOrder(id: 7);
+    expect(url, Uri.parse('http://api.test/orders/7/cancel'));
   });
 
   test('2xx 가 아니면 DioException 에서 서버 메시지를 읽을 수 있다', () async {
@@ -135,5 +138,12 @@ void main() {
     });
     expect(item.category, MenuCategory.nonCoffee);
     expect(MenuCategory.nonCoffee.toJson(), 'non_coffee');
+    expect(
+      StatusChange.fromJson({
+        'status': 'cancelled',
+        'at': '2026-10-15T05:30:00.000Z',
+      }).status,
+      OrderStatus.cancelled,
+    );
   });
 }

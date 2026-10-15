@@ -9,13 +9,17 @@ import { Icon } from "./icons";
 import styles from "./order-board.module.css";
 import { useOrders } from "./orders-provider";
 
-/** 열마다 다음 단계로 넘기는 버튼 이름 — 완료 열에는 버튼이 없다. */
+/** 열마다 다음 단계로 넘기는 버튼 이름 — 완료·취소 열에는 버튼이 없다. */
 const COLUMNS: { status: OrderStatus; action?: string }[] = [
   { status: "received", action: "제조 시작" },
   { status: "making", action: "픽업 준비 완료" },
   { status: "ready", action: "픽업 완료" },
   { status: "done" },
+  { status: "cancelled" },
 ];
+
+/** 끝난 주문(완료·취소)의 버튼 자리에 보이는 말 */
+const CLOSED_LABEL = { done: "픽업 완료됨", cancelled: "손님이 취소함" } as const;
 
 /** 이 시간(분)이 지나도록 끝나지 않은 주문은 경과 시간을 빨갛게 */
 const LATE_MINUTES = 10;
@@ -48,8 +52,8 @@ export function OrderBoard() {
       )}
       {COLUMNS.map(({ status, action }) => {
         const list = (orders ?? []).filter((o) => o.status === status);
-        // 진행 중인 열은 먼저 들어온 주문부터, 완료 열은 방금 끝난 주문부터
-        if (status === "done") list.reverse();
+        // 진행 중인 열은 먼저 들어온 주문부터, 완료·취소 열은 방금 끝난 주문부터
+        if (status === "done" || status === "cancelled") list.reverse();
         return (
           <section
             key={status}
@@ -94,23 +98,25 @@ function OrderCard({
   onAdvance: () => void;
 }) {
   const now = useMinute();
-  const doneAt = statusAt(order, "done");
+  const closed = order.status === "done" || order.status === "cancelled" ? order.status : undefined;
+  const closedAt = closed && statusAt(order, closed);
   const minutes = now === null ? null : Math.max(0, Math.floor((now - orderedAt(order).getTime()) / 60_000));
-  const late = !doneAt && minutes !== null && minutes >= LATE_MINUTES;
+  const late = !closed && minutes !== null && minutes >= LATE_MINUTES;
 
   return (
-    <article className={`${styles.card} ${doneAt ? styles.done : ""}`}>
+    <article className={`${styles.card} ${closed ? styles.done : ""} ${closed === "cancelled" ? styles.cancelled : ""}`}>
       <div className={styles.top}>
         <div className={styles.who}>
           <span className={styles.number}>#{orderNo(order.number)}</span>
           <span className={styles.nickname}>{order.nickname} 님</span>
         </div>
         <span className={`${styles.elapsed} ${late ? styles.late : ""}`}>
-          <Icon name={doneAt ? "check_circle" : "schedule"} size={14} />
-          {doneAt ? hhmm(doneAt) : minutes === null ? "" : minutes === 0 ? "방금" : `${minutes}분 전`}
+          <Icon name={closed === "cancelled" ? "cancel" : closed ? "check_circle" : "schedule"} size={14} />
+          {closedAt ? hhmm(closedAt) : minutes === null ? "" : minutes === 0 ? "방금" : `${minutes}분 전`}
         </span>
       </div>
-      {!doneAt && (
+      {/* 취소된 주문은 무엇이 빠졌는지 알 수 있게 줄을 그어 남긴다. */}
+      {closed !== "done" && (
         <ul className={styles.items}>
           {order.lines.map((line) => (
             // 같은 메뉴도 샷 추가가 다르면 다른 줄이다.
@@ -130,10 +136,12 @@ function OrderCard({
           <Icon name="arrow_forward" size={16} />
         </button>
       ) : (
-        <button type="button" className={styles.action} disabled>
-          픽업 완료됨
-          <Icon name="check" size={16} />
-        </button>
+        closed && (
+          <button type="button" className={styles.action} disabled>
+            {CLOSED_LABEL[closed]}
+            <Icon name={closed === "cancelled" ? "close" : "check"} size={16} />
+          </button>
+        )
       )}
     </article>
   );

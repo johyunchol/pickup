@@ -20,6 +20,8 @@ abstract final class PickupColors {
   static const statusReadySoft = Color(0xFFE1EEDF);
   static const statusDone = Color(0xFF75675C);
   static const statusDoneSoft = Color(0xFFEEE9E3);
+  static const statusCancelled = Color(0xFF8E4F4A);
+  static const statusCancelledSoft = Color(0xFFF2E3E1);
   static const danger = Color(0xFFB23B2A);
   static const dangerSoft = Color(0xFFF7E1DD);
 }

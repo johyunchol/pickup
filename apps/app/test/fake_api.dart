@@ -47,7 +47,7 @@ class FakeApi implements HttpClientAdapter {
     Dio(BaseOptions(baseUrl: 'http://api.test'))..httpClientAdapter = this,
   );
 
-  /// 사장님이 다음 단계로 넘긴 것처럼
+  /// 사장님이 다음 단계로 넘긴 것처럼 (취소도 같은 모양으로 남긴다)
   void advance(OrderStatus status) {
     final o = order!;
     order = Order(
@@ -118,6 +118,18 @@ class FakeApi implements HttpClientAdapter {
       return _json(order!.toJson(), 201);
     }
     if (req.method == 'GET' && path == '/orders/1') {
+      return _json(order!.toJson());
+    }
+    if (req.method == 'POST' && path == '/orders/1/cancel') {
+      // 서버처럼 접수 상태에서만 취소된다.
+      if (order!.status != OrderStatus.received) {
+        return _json({
+          'statusCode': 409,
+          'code': 'CONFLICT',
+          'message': '주문 42번은 이미 만들기 시작해서 취소할 수 없어요',
+        }, 409);
+      }
+      advance(OrderStatus.cancelled);
       return _json(order!.toJson());
     }
     return ResponseBody.fromString('not found', 404);

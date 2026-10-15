@@ -96,6 +96,67 @@ void main() {
     mark('app_end');
   }, timeout: const Timeout(Duration(minutes: 6)));
 
+  testWidgets('시연: 주문 취소', (tester) async {
+    Future<void> pause(int ms) async {
+      await Future<void>.delayed(Duration(milliseconds: ms));
+      await tester.pump();
+    }
+
+    Future<bool> waitFor(Finder finder, Duration timeout) async {
+      final end = DateTime.now().add(timeout);
+      while (DateTime.now().isBefore(end)) {
+        if (finder.evaluate().isNotEmpty) return true;
+        await pause(100);
+      }
+      return false;
+    }
+
+    await tester.pumpWidget(
+      PickupApp(api: PickupApi(Dio(BaseOptions(baseUrl: apiBaseUrl)))),
+    );
+    expect(
+      await waitFor(find.byTooltip('아메리카노 담기'), const Duration(seconds: 20)),
+      isTrue,
+    );
+    mark('app_menu_ready');
+    await pause(2000);
+    await tester.tap(find.byTooltip('아메리카노 담기'));
+    await pause(1300);
+    await tester.tap(find.text('장바구니 보기'));
+    await pause(1500);
+    await tester.tap(find.byType(TextField));
+    await pause(600);
+    await tester.enterText(find.byType(TextField), '예린');
+    await pause(900);
+    FocusManager.instance.primaryFocus?.unfocus();
+    await pause(900);
+    await tester.tap(find.byType(FilledButton));
+    mark('app_order_submitted');
+    expect(
+      await waitFor(find.text('주문을 받았어요'), const Duration(seconds: 10)),
+      isTrue,
+    );
+    mark('app_shows_received');
+    await pause(2500);
+
+    await tester.tap(find.text('주문 취소').last);
+    mark('app_tap_cancel');
+    expect(
+      await waitFor(find.text('주문을 취소할까요?'), const Duration(seconds: 5)),
+      isTrue,
+    );
+    await pause(1800);
+    await tester.tap(find.text('주문 취소').last);
+    mark('app_confirm_cancel');
+    expect(
+      await waitFor(find.text('주문을 취소했어요'), const Duration(seconds: 10)),
+      isTrue,
+    );
+    mark('app_shows_cancelled');
+    await pause(5000);
+    mark('app_end');
+  }, timeout: const Timeout(Duration(minutes: 4)));
+
   // 메뉴 화면만 잠깐 띄워 둔다 — 토큰 색을 바꾼 앞뒤 캡처용.
   //   flutter test integration_test/demo_order_flow_test.dart --plain-name '시연: 메뉴 화면' ...
   testWidgets('시연: 메뉴 화면', (tester) async {
