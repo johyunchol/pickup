@@ -1,0 +1,29 @@
+# 의존성·빌드 산출물
+node_modules/
+dist/
+.next/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Flutter / Dart
+.dart_tool/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+*.iml
+
+# 환경 변수·비밀 — 절대 커밋하지 않는다
+.env
+.env.*
+!.env.example
+*.pem
+*.jks
+*.keystore
+key.properties
+
+# OS·편집기
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
