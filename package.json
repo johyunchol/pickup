@@ -7,7 +7,9 @@
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
-    "verify:mobile": "bash tools/verify_mobile.sh"
+    "verify:mobile": "bash tools/verify_mobile.sh",
+    "tokens:generate": "pnpm --filter @pickup/tokens generate",
+    "tokens:check": "pnpm --filter @pickup/tokens check"
   },
   "devDependencies": {
     "turbo": "^2.11.8"

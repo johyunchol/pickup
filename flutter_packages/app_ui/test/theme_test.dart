@@ -1,0 +1,17 @@
+import 'package:app_ui/app_ui.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+void main() {
+  test('테마가 토큰 색을 그대로 쓴다', () {
+    final theme = pickupTheme();
+    expect(theme.colorScheme.primary, PickupColors.primary);
+    expect(theme.colorScheme.onSurface, PickupColors.text);
+    expect(theme.scaffoldBackgroundColor, PickupColors.bg);
+  });
+
+  test('카드 모서리는 radius-lg 토큰이다', () {
+    final shape = pickupTheme().cardTheme.shape! as RoundedRectangleBorder;
+    expect(shape.borderRadius, BorderRadius.circular(PickupRadius.lg));
+  });
+}

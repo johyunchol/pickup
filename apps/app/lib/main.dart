@@ -1,3 +1,4 @@
+import 'package:app_ui/app_ui.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -24,7 +25,7 @@ class PickupApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'pickup',
-      theme: ThemeData(colorSchemeSeed: Colors.brown),
+      theme: pickupTheme(),
       home: MenuScreen(menuApi: menuApi),
     );
   }

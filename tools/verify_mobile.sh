@@ -9,6 +9,7 @@ cd "$(dirname "$0")/.."
 MEMBERS=(
   apps/app
   flutter_packages/app_core
+  flutter_packages/app_ui
 )
 
 echo "▶ flutter pub get"

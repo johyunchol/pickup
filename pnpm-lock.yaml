@@ -212,6 +212,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@pickup/tokens':
+        specifier: workspace:*
+        version: link:../../packages/tokens
       next:
         specifier: ^16.4.0
         version: 16.4.0(@babel/core@7.29.7(supports-color@7.2.0))(@types/node@26.6.5)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -240,6 +243,8 @@ importers:
       typescript:
         specifier: ~6.0.3
         version: 6.0.3
+
+  packages/tokens: {}
 
 packages:
 
