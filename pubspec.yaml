@@ -1,0 +1,11 @@
+# Dart pub workspace — Flutter 앱과 공유 Dart 패키지를 묶는다.
+# JS 쪽(pnpm + Turborepo)과는 따로 돌아가고, 입구만 `pnpm verify:mobile` 로 맞춘다.
+name: pickup_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.4
+
+workspace:
+  - apps/app
+  - flutter_packages/app_core

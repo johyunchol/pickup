@@ -1,5 +1,7 @@
 packages:
   - "apps/*"
+  # Flutter 앱은 JS 워크스페이스가 아니다 — Dart pub workspace(루트 pubspec.yaml)가 맡는다.
+  - "!apps/app"
 
 # unrs-resolver 의 postinstall 은 네이티브 바인딩이 없을 때만 쓰는 폴백이라 막아 둔다.
 allowBuilds:
