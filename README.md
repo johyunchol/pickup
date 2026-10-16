@@ -43,6 +43,8 @@ AI 에이전트용 규칙은 [AGENTS.md](AGENTS.md).
 
 4000번 포트를 다른 프로그램이 쓰고 있으면 `PORT=4100 API_URL=http://localhost:4100 pnpm dev`.
 
+처음 받은 뒤 `pnpm build` 를 두 번 돌리면 두 번째에도 웹이 다시 빌드됩니다. 첫 `next build` 가 `apps/web/next-env.d.ts` 의 경로를 고쳐 써서 캐시 키가 바뀌기 때문이고, 세 번째부터 `FULL TURBO` 가 찍힙니다. 이 파일의 변경은 커밋하지 않아도 됩니다.
+
 ## 만든 시점의 버전 (2026-10)
 
 Node 26.7 · pnpm 12.8.1 · Turborepo 2.11.8 · Next.js 16.4.0 · NestJS 12.1.3 · @nestjs/swagger 12.0.2 · TypeScript 6.0.3 · zod 4.6.7 · Flutter 3.47.5 · Dart 3.13.4 · swagger_parser 1.45.0 · retrofit 4.10.0 · dio 5.11.1 · google_fonts 9.0.0
